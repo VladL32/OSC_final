@@ -1,0 +1,54 @@
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/fs.h>
+#include <asm/uaccess.h>
+
+MODULE_LICENSE(“GPL”);
+MODULE_AUTHOR(“Vladlix Palad1n Miras Maxim”);
+MODULE_DESCRIPTION(“OSC Final Exam”);
+MODULE_VERSION(“0.01”);
+
+static int device_open(struct inode *, struct file *);
+static int device_release(struct inode *, struct file *);
+static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
+
+static int device_open_count = 0;
+
+static struct file_operations file_ops = {
+  .write = device_write,
+  .open = device_open,
+  .release = device_release
+};
+
+static ssize_t device_write(struct file *flip, const char *buffer, size_t len, loff_t *offset) {
+  printk(KERN_ALERT “This operation is not supported.\n”);
+  return -EINVAL;
+};
+
+static int device_open(struct inode *inode, struct file *file) {
+      if (device_open_count) {
+      return -EBUSY;
+      };
+  device_open_count++;
+  try_module_get(THIS_MODULE);
+  return 0;
+};
+
+static int device_release(struct inode *inode, struct file *file) {
+  device_open_count--;
+  module_put(THIS_MODULE);
+  return 0;
+};
+
+static int __init kernel_init(void) {
+  printk(KERN_INFO “Hello, User! Do not ask TMQ!\n”);
+  return 0;
+};
+
+static void __exit kernel_exit(void) {
+  printk(KERN_INFO “Goodbye, User!\n”);
+};
+
+module_init(kernel_init);
+module_exit(kernel_exit);
